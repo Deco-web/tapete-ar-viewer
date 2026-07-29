@@ -249,16 +249,29 @@
 </div>
 
 <script>
+// Android/WebXR usa GLB; iOS AR Quick Look exige USDZ (não aceita GLB).
 const MODEL_URL = 'https://tapete-ar-viewer.vercel.app/Vase_Large(1).glb';
+const MODEL_URL_IOS = 'https://tapete-ar-viewer.vercel.app/Vase_Large.usdz';
 const cta = document.getElementById('cta-area');
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const ua = navigator.userAgent;
+const isIOS = (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
+// Chrome/Firefox/Edge no iOS NÃO suportam AR Quick Look (rel="ar") — só o Safari (WebKit).
+const isSafariIOS = isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
 
-if (isIOS) {
-  // iOS: AR Quick Look — link nativo com rel="ar"
-  // <img> deve ser filho único de <a rel="ar">; opacity:0 em vez de display:none para compatibilidade com Chrome iOS
+if (isIOS && !isSafariIOS) {
+  // Chrome/Firefox/Edge no iPhone: AR Quick Look indisponível. Orienta abrir no Safari.
+  cta.innerHTML = `
+    <div class="btn-ar" style="background:var(--surface);color:var(--text-secondary);border:0.5px solid var(--border-strong);cursor:default;">
+      Abra esta página no Safari
+    </div>`;
+  document.getElementById('no-ar-box').textContent =
+    'Para ver em AR no iPhone, abra esta página no Safari. Chrome e outros navegadores do iOS não suportam Realidade Aumentada.';
+  document.getElementById('no-ar-box').classList.add('visible');
+} else if (isSafariIOS) {
+  // iOS Safari: AR Quick Look — link nativo com rel="ar" apontando para o USDZ
   cta.innerHTML = `
     <div style="position:relative;width:100%;">
-      <a href="${MODEL_URL}" rel="ar" style="position:absolute;inset:0;z-index:2;">
+      <a href="${MODEL_URL_IOS}" rel="ar" style="position:absolute;inset:0;z-index:2;">
         <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" alt="">
       </a>
       <div class="btn-ar-ios" aria-hidden="true">
