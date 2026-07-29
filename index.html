@@ -1,768 +1,496 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Tapete AR — Tapetes São Carlos</title>
-  <meta name="description" content="Visualize tapetes em realidade aumentada no seu ambiente" />
-  <meta name="theme-color" content="#1a1a1a" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --surface-2: #242424;
-      --border: rgba(255,255,255,0.08);
-      --border-strong: rgba(255,255,255,0.14);
-      --text: #f0ede8;
-      --text-muted: #7a756e;
-      --text-secondary: #a89f95;
-      --accent: #c8a96e;
-      --accent-dim: rgba(200,169,110,0.12);
-      --accent-border: rgba(200,169,110,0.3);
-      --success: #5fad7e;
-      --success-dim: rgba(95,173,126,0.1);
-      --danger: #d96b5a;
-      --danger-dim: rgba(217,107,90,0.1);
-      --radius: 10px;
-      --radius-lg: 16px;
-    }
-
-    html, body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
-      min-height: 100dvh;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── Layout ── */
-    .shell {
-      max-width: 420px;
-      margin: 0 auto;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── Header ── */
-    header {
-      padding: 28px 20px 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo-mark {
-      width: 36px; height: 36px;
-      background: var(--accent);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .logo-mark svg { width: 20px; height: 20px; }
-    .logo-text {
-      font-family: 'Sora', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: -0.01em;
-    }
-    .logo-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    /* ── Hero ── */
-    .hero {
-      padding: 32px 20px 0;
-    }
-    .hero-eyebrow {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .hero-title {
-      font-family: 'Sora', sans-serif;
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      margin-bottom: 10px;
-    }
-    .hero-title span { color: var(--accent); }
-    .hero-desc {
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--text-secondary);
-    }
-
-    /* ── Steps ── */
-    .steps {
-      padding: 28px 20px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .step {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 14px 16px;
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-    }
-    .step-num {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      background: var(--accent-dim);
-      border: 1px solid var(--accent-border);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 600;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .step-body { flex: 1; }
-    .step-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
-    .step-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    /* ── Upload ── */
-    .upload-section {
-      padding: 20px 20px 0;
-    }
-    .upload-label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-muted);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .upload-zone {
-      border: 1.5px dashed var(--border-strong);
-      border-radius: var(--radius-lg);
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
-      background: var(--surface);
-    }
-    .upload-zone:hover, .upload-zone.dragover {
-      border-color: var(--accent);
-      background: var(--accent-dim);
-    }
-    .upload-zone input[type="file"] {
-      position: absolute; inset: 0;
-      opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
-    .upload-icon {
-      width: 44px; height: 44px;
-      margin: 0 auto 12px;
-      background: var(--surface-2);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .upload-icon svg { width: 22px; height: 22px; color: var(--text-muted); }
-    .upload-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-    .upload-hint {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* ── File badge ── */
-    .file-badge {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      background: var(--success-dim);
-      border: 0.5px solid rgba(95,173,126,0.25);
-      border-radius: var(--radius);
-      margin-top: 10px;
-    }
-    .file-badge.visible { display: flex; }
-    .file-badge-icon {
-      width: 32px; height: 32px;
-      background: rgba(95,173,126,0.15);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .file-badge-icon svg { width: 16px; height: 16px; color: var(--success); }
-    .file-badge-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--success);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .file-badge-size { font-size: 11px; color: rgba(95,173,126,0.7); }
-
-    /* ── Controls hint ── */
-    .controls-row {
-      display: flex;
-      gap: 8px;
-      padding: 16px 20px 0;
-    }
-    .ctrl {
-      flex: 1;
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 10px;
-      text-align: center;
-    }
-    .ctrl-icon { font-size: 20px; margin-bottom: 4px; }
-    .ctrl-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
-    /* ── CTA ── */
-    .cta-area {
-      padding: 20px 20px;
-      margin-top: auto;
-    }
-    .btn-ar {
-      width: 100%;
-      padding: 16px;
-      background: var(--accent);
-      color: #0f0f0f;
-      border: none;
-      border-radius: var(--radius-lg);
-      font-family: 'Sora', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px;
-      transition: opacity 0.2s, transform 0.1s;
-      letter-spacing: -0.01em;
-    }
-    .btn-ar:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .btn-ar:not(:disabled):active { transform: scale(0.98); }
-    .btn-ar svg { width: 20px; height: 20px; }
-
-    /* ── Compat ── */
-    .compat {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      padding: 0 20px 8px;
-    }
-    .compat-item {
-      padding: 8px 10px;
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .compat-item.ok { background: var(--success-dim); }
-    .compat-item.no { background: var(--danger-dim); }
-    .compat-item.warn { background: rgba(200,169,110,0.08); }
-    .compat-dot {
-      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-    }
-    .ok .compat-dot { background: var(--success); }
-    .no .compat-dot { background: var(--danger); }
-    .warn .compat-dot { background: var(--accent); }
-    .compat-text { font-size: 11px; }
-    .compat-name { font-weight: 500; display: block; }
-    .ok .compat-name { color: var(--success); }
-    .no .compat-name { color: var(--danger); }
-    .warn .compat-name { color: var(--accent); }
-    .compat-sub { color: var(--text-muted); display: block; font-size: 10px; }
-
-    .warning-box {
-      display: none;
-      margin: 0 20px;
-      padding: 12px 14px;
-      background: var(--danger-dim);
-      border: 0.5px solid rgba(217,107,90,0.25);
-      border-radius: var(--radius);
-      font-size: 13px;
-      color: var(--danger);
-      line-height: 1.5;
-    }
-    .warning-box.visible { display: block; }
-
-    footer {
-      padding: 12px 20px 24px;
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-  </style>
-</head>
-<body>
-<div class="shell">
-
-  <header>
-    <div class="logo-mark">
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="6" width="16" height="10" rx="1" fill="#0f0f0f" opacity="0.9"/>
-        <path d="M5 6V5a1 1 0 011-1h8a1 1 0 011 1v1" stroke="#0f0f0f" stroke-width="1.5"/>
-        <circle cx="10" cy="11" r="2" fill="#0f0f0f" opacity="0.5"/>
-      </svg>
-    </div>
-    <div>
-      <div class="logo-text">Tapete AR</div>
-      <div class="logo-sub">Tapetes São Carlos</div>
-    </div>
-  </header>
-
-  <div class="hero">
-    <div class="hero-eyebrow">Realidade Aumentada</div>
-    <h1 class="hero-title">Veja o tapete no<br><span>seu ambiente</span></h1>
-    <p class="hero-desc">Carregue o arquivo 3D do tapete e visualize como ele fica no seu espaço antes de comprar.</p>
-  </div>
-
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <div class="step-title">Carregue o arquivo GLB</div>
-        <div class="step-desc">Selecione o modelo 3D do tapete no campo abaixo</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <div class="step-title">Aponte para o chão</div>
-        <div class="step-desc">Mova o celular até o anel aparecer no piso</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <div class="step-title">Toque para posicionar</div>
-        <div class="step-desc">O tapete fica fixo no chão — ajuste com gestos</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="upload-section">
-    <div class="upload-label">Modelo 3D</div>
-    <div class="upload-zone" id="drop-zone">
-      <input type="file" id="glb-input" accept=".glb,.gltf" />
-      <div class="upload-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-      </div>
-      <div class="upload-title">Selecionar arquivo GLB</div>
-      <div class="upload-hint">Toque aqui ou arraste • .glb ou .gltf</div>
-    </div>
-    <div class="file-badge" id="file-badge">
-      <div class="file-badge-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <div>
-        <div class="file-badge-name" id="file-name">—</div>
-        <div class="file-badge-size" id="file-size">—</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="controls-row">
-    <div class="ctrl">
-      <div class="ctrl-icon">👆</div>
-      <div class="ctrl-label">1 dedo<br>rotacionar</div>
-    </div>
-    <div class="ctrl">
-      <div class="ctrl-icon">🤏</div>
-      <div class="ctrl-label">2 dedos<br>escalar</div>
-    </div>
-    <div class="ctrl">
-      <div class="ctrl-icon">👇</div>
-      <div class="ctrl-label">toque<br>posicionar</div>
-    </div>
-  </div>
-
-  <div class="compat">
-    <div class="compat-item ok">
-      <div class="compat-dot"></div>
-      <div class="compat-text">
-        <span class="compat-name">Android</span>
-        <span class="compat-sub">Chrome + ARCore</span>
-      </div>
-    </div>
-    <div class="compat-item ok">
-      <div class="compat-dot"></div>
-      <div class="compat-text">
-        <span class="compat-name">iOS 15+</span>
-        <span class="compat-sub">Safari AR Quick Look</span>
-      </div>
-    </div>
-    <div class="compat-item no">
-      <div class="compat-dot"></div>
-      <div class="compat-text">
-        <span class="compat-name">Desktop</span>
-        <span class="compat-sub">Sem suporte AR</span>
-      </div>
-    </div>
-    <div class="compat-item warn">
-      <div class="compat-dot"></div>
-      <div class="compat-text">
-        <span class="compat-name">Firefox</span>
-        <span class="compat-sub">Sem WebXR AR</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="warning-box" id="no-ar-box">
-    AR não disponível neste dispositivo. Use o Chrome no Android com ARCore instalado, ou Safari no iOS 15+.
-  </div>
-
-  <div class="cta-area">
-    <button class="btn-ar" id="ar-btn" disabled onclick="launchAR()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
-        <rect x="7" y="7" width="10" height="10" rx="1"/>
-      </svg>
-      Abrir AR
-    </button>
-  </div>
-
-  <footer>Tapetes São Carlos · Visualizador AR</footer>
-</div>
-
-<script>
-  let glbObjectURL = null;
-  let glbFile = null;
-
-  const input = document.getElementById('glb-input');
-  const badge = document.getElementById('file-badge');
-  const btn   = document.getElementById('ar-btn');
-  const zone  = document.getElementById('drop-zone');
-
-  input.addEventListener('change', () => { if (input.files[0]) processFile(input.files[0]); });
-
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault(); zone.classList.remove('dragover');
-    const f = e.dataTransfer.files[0];
-    if (f) processFile(f);
-  });
-
-  function processFile(file) {
-    if (!file.name.match(/\.(glb|gltf)$/i)) {
-      alert('Selecione um arquivo .glb ou .gltf');
-      return;
-    }
-    glbFile = file;
-    if (glbObjectURL) URL.revokeObjectURL(glbObjectURL);
-    glbObjectURL = URL.createObjectURL(file);
-
-    document.getElementById('file-name').textContent = file.name;
-    const mb = (file.size / 1024 / 1024).toFixed(1);
-    const kb = (file.size / 1024).toFixed(0);
-    document.getElementById('file-size').textContent = file.size > 1024*1024 ? mb + ' MB' : kb + ' KB';
-    badge.classList.add('visible');
-    btn.disabled = false;
-    zone.style.borderColor = 'var(--success)';
-  }
-
-  async function launchAR() {
-    if (!glbObjectURL) return;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-    if (isIOS) {
-      const a = document.createElement('a');
-      a.href = glbObjectURL;
-      a.rel = 'ar';
-      const img = document.createElement('img');
-      img.src = '';
-      a.appendChild(img);
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => document.body.removeChild(a), 500);
-      return;
-    }
-
-    if (!navigator.xr) { showNoAR(); return; }
-    const ok = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
-    if (!ok) { showNoAR(); return; }
-
-    openARSession();
-  }
-
-  function showNoAR() {
-    document.getElementById('no-ar-box').classList.add('visible');
-    btn.disabled = true;
-  }
-
-  function openARSession() {
-    const html = buildARPage(glbObjectURL, glbFile.name);
-    const blob = new Blob([html], { type: 'text/html' });
-    const url  = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
-  }
-
-  function buildARPage(glbUrl, fileName) {
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>AR — ${fileName}</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Coração de Verdade — 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet" />
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;overflow:hidden;font-family:system-ui,sans-serif;touch-action:none}
-canvas{display:block;width:100vw;height:100vh}
-#overlay{position:fixed;inset:0;pointer-events:none}
-#hint{
-  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.65);color:#fff;padding:10px 18px;
-  border-radius:20px;font-size:13px;text-align:center;white-space:nowrap;
-  backdrop-filter:blur(6px);transition:opacity .4s;
-}
-#scale-badge{
-  position:fixed;bottom:150px;left:50%;transform:translateX(-50%);
-  background:rgba(200,169,110,0.85);color:#0f0f0f;padding:5px 14px;
-  border-radius:20px;font-size:12px;font-weight:600;display:none;
-}
-#exit{
-  position:fixed;top:env(safe-area-inset-top,20px);right:16px;
-  background:rgba(0,0,0,0.55);color:#fff;border:none;
-  border-radius:50px;padding:9px 18px;font-size:13px;cursor:pointer;
-  pointer-events:all;backdrop-filter:blur(6px);
-}
-#reset{
-  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-  background:rgba(255,255,255,0.12);color:#fff;border:none;
-  border-radius:50px;padding:9px 22px;font-size:13px;cursor:pointer;
-  pointer-events:all;display:none;backdrop-filter:blur(6px);
-}
+  :root {
+    --bg: #0a0706;
+    --ink: #e9d9c9;
+    --ink-dim: #9a8474;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Cormorant Garamond", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  #webgl {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    z-index: 0;
+    touch-action: none;
+  }
+
+  .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(120% 95% at 50% 46%, rgba(120, 14, 9, 0.10), rgba(10,7,6,0) 52%),
+      radial-gradient(150% 130% at 50% 50%, rgba(10,7,6,0) 38%, rgba(0,0,0,0.9) 100%);
+  }
+  body.duo .vignette {
+    background:
+      radial-gradient(58% 80% at 20% 46%, rgba(40,90,255,0.18), rgba(10,7,6,0) 60%),
+      radial-gradient(58% 80% at 80% 54%, rgba(220,32,20,0.18), rgba(10,7,6,0) 60%),
+      radial-gradient(150% 130% at 50% 50%, rgba(10,7,6,0) 36%, rgba(0,0,0,0.92) 100%);
+  }
+  .grain {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    opacity: 0.05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .frame {
+    position: fixed; inset: clamp(14px, 2.4vw, 30px); z-index: 3; pointer-events: none;
+    border: 1px solid rgba(154, 132, 116, 0.26);
+  }
+  .frame::after {
+    content: ""; position: absolute; inset: 7px;
+    border: 1px solid rgba(154, 132, 116, 0.14);
+  }
+
+  .overlay {
+    position: fixed; inset: 0; z-index: 4; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: clamp(34px, 6vh, 64px) 24px clamp(28px, 5vh, 52px);
+    text-align: center;
+  }
+  .plate-label {
+    margin: 0;
+    font-size: clamp(11px, 1.5vh, 13px);
+    letter-spacing: 0.42em; text-transform: uppercase;
+    color: var(--ink-dim); font-weight: 500; padding-left: 0.42em;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.9);
+  }
+  .caption { max-width: 32ch; margin: 0 auto; }
+  .caption .lead {
+    display: block;
+    font-size: clamp(20px, 3vh, 28px); line-height: 1.28; font-weight: 500;
+    color: var(--ink); margin: 0; text-wrap: balance;
+    text-shadow: 0 2px 22px rgba(0,0,0,0.95);
+  }
+  .caption .lead em { font-style: italic; color: #f0c9b8; }
+  .caption .sub {
+    display: block; margin-top: 0.45em;
+    font-family: "EB Garamond", Georgia, serif; font-style: italic;
+    font-size: clamp(13px, 1.85vh, 16px); line-height: 1.5; color: var(--ink-dim);
+    text-wrap: pretty; text-shadow: 0 2px 18px rgba(0,0,0,0.95);
+  }
+  .sig {
+    margin: clamp(12px, 2vh, 20px) 0 0;
+    font-size: clamp(11px, 1.4vh, 13px); letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(154,132,116,0.72); text-shadow: 0 2px 16px rgba(0,0,0,0.9);
+  }
+  .hint {
+    position: fixed; right: clamp(22px, 3vw, 40px); bottom: clamp(20px, 3vh, 34px);
+    z-index: 5; pointer-events: none;
+    font-family: "EB Garamond", Georgia, serif; font-style: italic;
+    font-size: 12px; color: rgba(154,132,116,0.5);
+    transition: opacity 0.8s ease;
+  }
+  .loading {
+    position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center;
+    background: var(--bg); color: var(--ink-dim);
+    font-family: "EB Garamond", Georgia, serif; font-style: italic; font-size: 16px;
+    letter-spacing: 0.04em; transition: opacity 0.7s ease;
+  }
+  .loading.gone { opacity: 0; pointer-events: none; }
+  .loading .dot { animation: bp 1s ease-in-out infinite; }
+  @keyframes bp { 0%,100%{opacity:.3} 50%{opacity:1} }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="overlay">
-  <div id="hint">Aponte para o chão e toque para posicionar o tapete</div>
-  <div id="scale-badge" id="scale">100%</div>
-  <button id="exit" onclick="endSession()">✕ Sair</button>
-  <button id="reset" onclick="resetPlacement()">↺ Reposicionar</button>
-</div>
+  <canvas id="webgl"></canvas>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+  <div class="frame"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
-<script>
-const canvas = document.getElementById('c');
-const hint = document.getElementById('hint');
-const scaleBadge = document.getElementById('scale-badge');
-const resetBtn = document.getElementById('reset');
+  <div class="overlay" data-screen-label="cartao">
+    <p class="plate-label" id="plateLabel">Guarde-o com carinho. Foi doloroso arrancá-lo do peito.</p>
+    <div>
+      <p class="caption">
+        <span class="lead" id="leadMsg">A morte poderá levar tudo de mim <em>e meus ossos podem virar pó.</em>.</span>
+        <span class="sub" id="subMsg">Mas ele permanecerá aqui, batendo por você. Sempre.</span>
+      </p>
+      <p class="sig" id="sigMsg">Feliz Dia dos Namorados</p>
+    </div>
+  </div>
 
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.xr.enabled = true;
+  <div class="hint" id="hint">arraste para girar</div>
+  <div class="loading" id="loading">preparando o coração<span class="dot">…</span></div>
+
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }}
+  </script>
+  <script type="module">
+import * as THREE from 'three';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const state = {
+  bpm: 64,
+  autoRotate: true,
+  style: 'duo',
+  color: new THREE.Color('#7e1410'),
+};
+
+const canvas = document.getElementById('webgl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.28;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 20);
-scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-sun.position.set(1,3,2);
-scene.add(sun);
+const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 2000);
+camera.position.set(0, 0.1, 5.2);
 
-let reticle, model, placed=false;
-let currentScale=1, baseScale=1;
-let lastPinchDist=null, lastPinchAngle=null;
-let xrSession=null, hitTestSource=null;
-let dragStartY=null, startRotY=null;
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.035).texture;
 
-/* Reticle */
-reticle = new THREE.Mesh(
-  new THREE.RingGeometry(0.1, 0.13, 32).rotateX(-Math.PI/2),
-  new THREE.MeshBasicMaterial({color:0xc8a96e, side:THREE.DoubleSide})
+const key = new THREE.DirectionalLight(0xfff1e8, 1.7);
+key.position.set(3.5, 4.5, 5);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xff3324, 1.4);
+rim.position.set(-4.5, -0.5, -3.5);
+scene.add(rim);
+const fill = new THREE.DirectionalLight(0xbfcfff, 0.8);
+fill.position.set(0, 1.5, 6);
+scene.add(fill);
+const amb = new THREE.AmbientLight(0x401c14, 0.7);
+scene.add(amb);
+
+// pulsing inner glow lights (red + blue), driven by the heartbeat
+const coreRed = new THREE.PointLight(0xff2a1a, 0.0, 9, 2.0);
+coreRed.position.set(0.5, 0, 0.3);
+scene.add(coreRed);
+const coreBlue = new THREE.PointLight(0x2f6cff, 0.0, 9, 2.0);
+coreBlue.position.set(-0.5, 0, 0.3);
+scene.add(coreBlue);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.enablePan = false;
+controls.minDistance = 3.4;
+controls.maxDistance = 8;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.5;
+controls.target.set(0, 0, 0);
+
+function fleshTextures() {
+  const N = 1024;
+  const c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d');
+  x.fillStyle = '#7c1410'; x.fillRect(0, 0, N, N);
+  for (let i = 0; i < 1400; i++) {
+    const r = 8 + Math.random() * 70;
+    const px = Math.random() * N, py = Math.random() * N;
+    const dark = Math.random() < 0.5;
+    const g = x.createRadialGradient(px, py, 0, px, py, r);
+    if (dark) { g.addColorStop(0, 'rgba(50,6,5,0.5)'); }
+    else { g.addColorStop(0, 'rgba(190,70,52,0.45)'); }
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill();
+  }
+  for (let i = 0; i < 90; i++) {
+    x.strokeStyle = i % 3 === 0 ? 'rgba(230,180,120,0.18)' : 'rgba(40,4,4,0.4)';
+    x.lineWidth = 1 + Math.random() * 2.5;
+    x.beginPath();
+    let px = Math.random() * N, py = Math.random() * N;
+    x.moveTo(px, py);
+    const seg = 4 + (Math.random() * 5 | 0);
+    for (let s = 0; s < seg; s++) { px += (Math.random() - 0.5) * 120; py += (Math.random() - 0.5) * 120; x.lineTo(px, py); }
+    x.stroke();
+  }
+  const albedo = new THREE.CanvasTexture(c);
+  albedo.colorSpace = THREE.SRGBColorSpace;
+
+  const b = document.createElement('canvas'); b.width = b.height = N;
+  const bx = b.getContext('2d');
+  bx.fillStyle = '#808080'; bx.fillRect(0, 0, N, N);
+  for (let i = 0; i < 2600; i++) {
+    const r = 4 + Math.random() * 36;
+    const px = Math.random() * N, py = Math.random() * N;
+    const v = Math.random() < 0.5 ? 30 : 210;
+    const g = bx.createRadialGradient(px, py, 0, px, py, r);
+    g.addColorStop(0, `rgba(${v},${v},${v},0.5)`);
+    g.addColorStop(1, 'rgba(128,128,128,0)');
+    bx.fillStyle = g; bx.beginPath(); bx.arc(px, py, r, 0, 7); bx.fill();
+  }
+  const bump = new THREE.CanvasTexture(b);
+  return { albedo, bump };
+}
+
+const { albedo, bump } = fleshTextures();
+
+// ---- heartbeat muscle deformation (runs on the GPU; cheap + smooth) ----
+const beatUniforms = {
+  uBeat: { value: 0 },
+  uCenter: { value: new THREE.Vector3() },
+  uAxis: { value: new THREE.Vector3(0, 1, 0) },
+  uHalf: { value: 1 },
+};
+
+const material = new THREE.MeshStandardMaterial({
+  color: state.color,
+  map: albedo,
+  bumpMap: bump,
+  bumpScale: 0.2,
+  roughness: 0.5,
+  roughnessMap: bump,
+  metalness: 0.0,
+  envMapIntensity: 0.7,
+  emissive: new THREE.Color(0x320604),
+  emissiveIntensity: 0.5,
+});
+
+material.onBeforeCompile = (shader) => {
+  shader.uniforms.uBeat = beatUniforms.uBeat;
+  shader.uniforms.uCenter = beatUniforms.uCenter;
+  shader.uniforms.uAxis = beatUniforms.uAxis;
+  shader.uniforms.uHalf = beatUniforms.uHalf;
+  shader.vertexShader =
+    'uniform float uBeat;\nuniform vec3 uCenter;\nuniform vec3 uAxis;\nuniform float uHalf;\n' +
+    shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      [
+        '#include <begin_vertex>',
+        '{',
+        '  vec3 rel = transformed - uCenter;',
+        '  float along = dot(rel, uAxis);',
+        '  vec3 radial = rel - along * uAxis;',
+        '  float aN = clamp(along / uHalf, -1.0, 1.0);',
+        '  float w = smoothstep(1.0, -0.45, aN);',          // less near base/vessels, more toward apex
+        '  float contract = 0.135 * uBeat * w;',            // walls pull inward
+        '  float ang = 0.24 * uBeat * aN;',                 // wringing twist (opposite at the two ends)
+        '  float cs = cos(ang), sn = sin(ang);',
+        '  vec3 rot = radial * cs + cross(uAxis, radial) * sn + uAxis * dot(uAxis, radial) * (1.0 - cs);',
+        '  rot *= (1.0 - contract);',
+        '  float newAlong = along * (1.0 - 0.055 * uBeat * w);',  // slight shortening along the long axis
+        '  transformed = uCenter + uAxis * newAlong + rot;',
+        '}',
+      ].join('\n')
+    );
+};
+
+// ---- two lighting/colour styles: warm red, and blue+red duotone ----
+function applyStyle(style) {
+  state.style = style;
+  if (style === 'duo') {
+    key.color.set(0xff2616); key.intensity = 3.1; key.position.set(4.8, 2.4, 3.2);
+    rim.color.set(0x2f6cff); rim.intensity = 3.4; rim.position.set(-4.8, 1.4, -1.2);
+    fill.color.set(0xc6d2ff); fill.intensity = 1.0; fill.position.set(0, 1.5, 6);
+    amb.color.set(0x1a2334); amb.intensity = 1.15;
+    material.color.set('#8a322c');
+    material.emissive.set('#33101c');
+    material.envMapIntensity = 1.0;
+    document.body.classList.add('duo');
+  } else {
+    key.color.set(0xfff1e8); key.intensity = 2.1; key.position.set(3.5, 4.5, 5);
+    rim.color.set(0xff3324); rim.intensity = 1.7; rim.position.set(-4.5, -0.5, -3.5);
+    fill.color.set(0x9fb6c8); fill.intensity = 0.75; fill.position.set(-1.5, 2, 6);
+    amb.color.set(0x4c2418); amb.intensity = 1.0;
+    material.color.set(state.color);
+    material.emissive.set('#320604');
+    material.envMapIntensity = 0.9;
+    document.body.classList.remove('duo');
+  }
+}
+applyStyle(state.style);
+
+const pivot = new THREE.Group();
+scene.add(pivot);
+
+const loadingEl = document.getElementById('loading');
+const hintEl = document.getElementById('hint');
+
+new OBJLoader().load(
+  'https://cdn.jsdelivr.net/gh/MattSchroyer/heart@master/models/heart1.obj',
+  (obj) => {
+    obj.traverse((m) => { if (m.isMesh) { m.material = material; m.geometry.computeVertexNormals(); } });
+
+    // local-space long axis + center for the muscle-contraction shader
+    const lbox = new THREE.Box3();
+    obj.traverse((m) => { if (m.isMesh) { m.geometry.computeBoundingBox(); lbox.union(m.geometry.boundingBox); } });
+    const lc = lbox.getCenter(new THREE.Vector3());
+    const ls = lbox.getSize(new THREE.Vector3());
+    let axis = new THREE.Vector3(0, 1, 0), half = ls.y / 2;
+    if (ls.x >= ls.y && ls.x >= ls.z) { axis.set(1, 0, 0); half = ls.x / 2; }
+    else if (ls.z >= ls.x && ls.z >= ls.y) { axis.set(0, 0, 1); half = ls.z / 2; }
+    beatUniforms.uCenter.value.copy(lc);
+    beatUniforms.uAxis.value.copy(axis);
+    beatUniforms.uHalf.value = Math.max(half, 0.001);
+
+    const box = new THREE.Box3().setFromObject(obj);
+    const size = box.getSize(new THREE.Vector3());
+    const ctr = box.getCenter(new THREE.Vector3());
+    const fit = 2.6 / Math.max(size.x, size.y, size.z);
+    obj.scale.setScalar(fit);
+    obj.position.set(-ctr.x * fit, -ctr.y * fit, -ctr.z * fit);
+    // stand the heart upright (apex down, great vessels up) inside an orient group,
+    // so the beat-scale and auto-rotation pivot around its true center
+    const orient = new THREE.Group();
+    orient.rotation.set(-Math.PI / 2, 0, 0);
+    orient.add(obj);
+    pivot.add(orient);
+    loadingEl.classList.add('gone');
+    setTimeout(() => loadingEl.remove(), 800);
+    setTimeout(() => { if (hintEl) hintEl.style.opacity = '0'; }, 4200);
+  },
+  undefined,
+  (err) => {
+    loadingEl.textContent = 'não consegui carregar o modelo 3D';
+    console.error('heart load error', err);
+  }
 );
-reticle.matrixAutoUpdate = false;
-reticle.visible = false;
-scene.add(reticle);
 
-/* GLTF loader */
-function loadGLTFScript() {
-  return new Promise(res => {
-    if(window.THREE && THREE.GLTFLoader){res();return;}
-    const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-    s.onload=res; document.head.appendChild(s);
-  });
+let userActive = false, resumeT = 0;
+controls.addEventListener('start', () => { userActive = true; controls.autoRotate = false; if (hintEl) hintEl.style.opacity = '0'; });
+controls.addEventListener('end', () => { userActive = false; resumeT = performance.now() + 2500; });
+
+function gauss(p, c, w) { return Math.exp(-((p - c) * (p - c)) / (2 * w * w)); }
+function beatPulse(phase) {
+  return gauss(phase, 0.0, 0.045) + 0.55 * gauss(phase, 0.17, 0.052) + gauss(phase, 1.0, 0.045);
 }
 
-async function loadModel(url) {
-  await loadGLTFScript();
-  return new Promise((resolve, reject) => {
-    const loader = new THREE.GLTFLoader();
-    loader.load(url, gltf => resolve(gltf.scene), null, reject);
-  });
-}
+const clock = new THREE.Clock();
+let beatAcc = 0;
+let perfFrames = 0, perfT0 = performance.now(), perfLowered = false;
 
-loadModel('${glbUrl}').then(obj => {
-  model = obj;
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const maxDim = Math.max(size.x, size.z, 0.01);
-  baseScale = 1.2 / maxDim;
-  currentScale = 1;
-  model.scale.setScalar(baseScale);
-  model.visible = false;
-  scene.add(model);
-}).catch(() => {
-  const geo = new THREE.BoxGeometry(1.0, 0.02, 1.5);
-  const mat = new THREE.MeshLambertMaterial({color:0x8B6914});
-  model = new THREE.Mesh(geo, mat);
-  baseScale = 1;
-  model.visible = false;
-  scene.add(model);
-});
+function frame() {
+  requestAnimationFrame(frame);
+  // adaptive quality: if the first second runs below ~45fps, drop to 1x
+  if (!perfLowered && ++perfFrames === 70) {
+    const fps = 70000 / (performance.now() - perfT0);
+    if (fps < 45) {
+      renderer.setPixelRatio(1);
+      renderer.setSize(innerWidth, innerHeight);
+      perfLowered = true;
+    }
+  }
+  const dt = clock.getDelta();
+  const period = 60 / state.bpm;
+  beatAcc = (beatAcc + dt) % period;
+  const phase = beatAcc / period;
+  const pulse = Math.min(beatPulse(phase), 1.2);
 
-/* AR Session */
-navigator.xr.requestSession('immersive-ar', {
-  requiredFeatures:['hit-test'],
-  optionalFeatures:['dom-overlay'],
-  domOverlay:{root: document.getElementById('overlay')}
-}).then(session => {
-  xrSession = session;
-  renderer.xr.setSession(session);
-  session.requestReferenceSpace('viewer').then(rs => {
-    session.requestHitTestSource({space:rs}).then(src => hitTestSource=src);
-  });
-  session.addEventListener('select', onSelect);
-  renderer.setAnimationLoop(onFrame);
-}).catch(err => {
-  hint.textContent = 'Erro: ' + err.message;
-});
+  const s = 1 + 0.018 * pulse;
+  pivot.scale.set(s, s, s);
+  beatUniforms.uBeat.value = Math.min(pulse, 1.0);
+  if (state.style === 'duo') {
+    material.emissiveIntensity = 0.3 + 0.45 * pulse;
+    coreRed.intensity = 0.3 + 2.4 * pulse;
+    coreBlue.intensity = 0.3 + 2.4 * pulse;
+  } else {
+    material.emissiveIntensity = 0.45 + 0.5 * pulse;
+    coreRed.intensity = 0.4 + 2.6 * pulse;
+    coreBlue.intensity = 0;
+  }
 
-function onSelect() {
-  if(!reticle.visible || !model) return;
-  model.position.setFromMatrixPosition(reticle.matrix);
-  model.rotation.y = Math.random()*0; // keep 0 initially
-  model.visible = true;
-  placed = true;
-  reticle.visible = false;
-  hint.textContent = '1 dedo para rotacionar · 2 dedos para escalar';
-  resetBtn.style.display = 'block';
-  scaleBadge.style.display = 'block';
-  setTimeout(() => { hint.style.opacity='0'; }, 3500);
-}
-
-function onFrame(time, frame) {
-  if(!frame) return;
+  if (!userActive && state.autoRotate && performance.now() > resumeT) controls.autoRotate = true;
+  controls.update();
   renderer.render(scene, camera);
-
-  if(!placed && hitTestSource) {
-    const results = frame.getHitTestResults(hitTestSource);
-    const rs = renderer.xr.getReferenceSpace();
-    if(results.length > 0) {
-      const pose = results[0].getPose(rs);
-      reticle.visible = true;
-      reticle.matrix.fromArray(pose.transform.matrix);
-    } else {
-      reticle.visible = false;
-    }
-  }
 }
+frame();
 
-/* Touch gestures */
-canvas.addEventListener('touchstart', e => {
-  if(!placed || !model) return;
-  if(e.touches.length===2) {
-    lastPinchDist  = pinchDist(e.touches);
-    lastPinchAngle = pinchAngle(e.touches);
-  } else if(e.touches.length===1) {
-    dragStartY   = e.touches[0].clientX;
-    startRotY    = model.rotation.y;
-  }
-},{passive:true});
-
-canvas.addEventListener('touchmove', e => {
-  if(!placed || !model) return;
-  e.preventDefault();
-  if(e.touches.length===2) {
-    const d = pinchDist(e.touches);
-    const a = pinchAngle(e.touches);
-    if(lastPinchDist) {
-      currentScale = Math.max(0.15, Math.min(6, currentScale * (d/lastPinchDist)));
-      model.scale.setScalar(baseScale * currentScale);
-      scaleBadge.textContent = Math.round(currentScale*100) + '%';
-    }
-    if(lastPinchAngle !== null) {
-      model.rotation.y += a - lastPinchAngle;
-    }
-    lastPinchDist  = d;
-    lastPinchAngle = a;
-  } else if(e.touches.length===1 && dragStartY!==null) {
-    const dx = e.touches[0].clientX - dragStartY;
-    model.rotation.y = startRotY + dx * 0.008;
-  }
-},{passive:false});
-
-canvas.addEventListener('touchend', e => {
-  if(e.touches.length < 2){ lastPinchDist=null; lastPinchAngle=null; }
-  if(e.touches.length < 1){ dragStartY=null; }
-},{passive:true});
-
-function pinchDist(t){ const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY; return Math.sqrt(dx*dx+dy*dy); }
-function pinchAngle(t){ return Math.atan2(t[1].clientY-t[0].clientY, t[1].clientX-t[0].clientX); }
-
-function resetPlacement() {
-  placed = false;
-  if(model) model.visible = false;
-  reticle.visible = false;
-  hint.textContent = 'Aponte para o chão e toque para posicionar';
-  hint.style.opacity = '1';
-  resetBtn.style.display = 'none';
-  scaleBadge.style.display = 'none';
-}
-
-function endSession() {
-  if(xrSession) xrSession.end();
-  window.close();
-}
-
-window.addEventListener('resize',()=>{
-  renderer.setSize(window.innerWidth,window.innerHeight);
-  camera.aspect=window.innerWidth/window.innerHeight;
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
 });
-<\/script>
-</body>
-</html>`;
-  }
-</script>
+
+window.__heart = {
+  setBpm: (v) => { state.bpm = v; },
+  setAutoRotate: (v) => { state.autoRotate = v; controls.autoRotate = v; },
+  setStyle: (v) => { applyStyle(v); },
+  setColor: (hex) => {
+    state.color.set(hex);
+    if (state.style === 'warm') material.color.set(hex);
+  },
+};
+  </script>
+
+  <!-- React + Babel for the Tweaks panel -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" data-presets="react">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "bpm": 64,
+  "palette": "Azul & Vermelho",
+  "color": "#7e1410",
+  "rotate": true,
+  "lead": "É este, de verdade, que <em>bate por você</em>.",
+  "sub": "Não o desenho de sempre — o órgão inteiro, com suas veias e o seu barulho. Inteiro, e seu.",
+  "sig": "Feliz Dia dos Namorados"
+}/*EDITMODE-END*/;
+
+const HEART_COLORS = ["#7e1410", "#9e1410", "#8a0f24", "#a83a22"];
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  React.useEffect(() => { window.__heart && window.__heart.setBpm(t.bpm); }, [t.bpm]);
+  React.useEffect(() => { window.__heart && window.__heart.setColor(t.color); }, [t.color]);
+  React.useEffect(() => { window.__heart && window.__heart.setAutoRotate(t.rotate); }, [t.rotate]);
+  React.useEffect(() => { window.__heart && window.__heart.setStyle(t.palette.indexOf('Azul') === 0 ? 'duo' : 'warm'); }, [t.palette]);
+
+  React.useEffect(() => { const e = document.getElementById("leadMsg"); if (e) e.innerHTML = t.lead; }, [t.lead]);
+  React.useEffect(() => { const e = document.getElementById("subMsg"); if (e) e.textContent = t.sub; }, [t.sub]);
+  React.useEffect(() => { const e = document.getElementById("sigMsg"); if (e) e.textContent = t.sig; }, [t.sig]);
+
+  React.useEffect(() => {
+    const id = setInterval(() => {
+      if (window.__heart) {
+        window.__heart.setBpm(t.bpm);
+        window.__heart.setColor(t.color);
+        window.__heart.setAutoRotate(t.rotate);
+        window.__heart.setStyle(t.palette.indexOf('Azul') === 0 ? 'duo' : 'warm');
+        clearInterval(id);
+      }
+    }, 200);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <TweaksPanel title="Tweaks">
+      <TweakSection label="Batimento" />
+      <TweakSlider label="Pulso" value={t.bpm} min={44} max={108} step={1} unit=" bpm"
+        onChange={(v) => setTweak("bpm", v)} />
+      <TweakToggle label="Girar sozinho" value={t.rotate}
+        onChange={(v) => setTweak("rotate", v)} />
+      <TweakSection label="Cor do coração" />
+      <TweakRadio label="Paleta" value={t.palette} options={["Vermelho", "Azul & Vermelho"]}
+        onChange={(v) => setTweak("palette", v)} />
+      <TweakColor label="Tom (vermelho)" value={t.color} options={HEART_COLORS}
+        onChange={(v) => setTweak("color", v)} />
+      <TweakSection label="Mensagem" />
+      <TweakText label="Frase" value={t.lead} onChange={(v) => setTweak("lead", v)} />
+      <TweakText label="Detalhe" value={t.sub} onChange={(v) => setTweak("sub", v)} />
+      <TweakText label="Assinatura" value={t.sig} onChange={(v) => setTweak("sig", v)} />
+    </TweaksPanel>
+  );
+}
+
+const __root = document.createElement("div");
+document.body.appendChild(__root);
+ReactDOM.createRoot(__root).render(<App />);
+  </script>
 </body>
 </html>
