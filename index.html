@@ -255,16 +255,20 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
 if (isIOS) {
   // iOS: AR Quick Look — link nativo com rel="ar"
-  // AR Quick Look: o <a rel="ar"> precisa ter um <img> como PRIMEIRO filho
+  // AR Quick Look: <a rel="ar"> só pode ter <img> como filho
   cta.innerHTML = `
-    <a class="btn-ar-ios" href="${MODEL_URL}" rel="ar">
-      <img src="" style="display:none;width:0;height:0" alt="">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
-        <rect x="7" y="7" width="10" height="10" rx="1"/>
-      </svg>
-      Abrir AR
-    </a>`;
+    <div style="position:relative;width:100%;">
+      <a href="${MODEL_URL}" rel="ar" style="position:absolute;inset:0;z-index:2;">
+        <img src="" style="display:none;width:0;height:0" alt="">
+      </a>
+      <div class="btn-ar-ios" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
+          <rect x="7" y="7" width="10" height="10" rx="1"/>
+        </svg>
+        Abrir AR
+      </div>
+    </div>`;
 } else {
   // Android / outros: WebXR
   cta.innerHTML = `
