@@ -252,8 +252,9 @@
 const MODEL_URL = 'https://tapete-ar-viewer.vercel.app/Vase_Large(1).glb';
 const cta = document.getElementById('cta-area');
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isIOSSafari = isIOS && /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(navigator.userAgent);
 
-if (isIOS) {
+if (isIOSSafari) {
   // iOS: AR Quick Look — link nativo com rel="ar"
   // AR Quick Look: <a rel="ar"> só pode ter <img> como filho
   cta.innerHTML = `
@@ -268,6 +269,14 @@ if (isIOS) {
         </svg>
         Abrir AR
       </div>
+    </div>`;
+} else if (isIOS) {
+  // iOS mas não Safari (Chrome, Firefox, etc.) — AR Quick Look não funciona
+  cta.innerHTML = `
+    <div style="padding:16px;background:rgba(217,107,90,0.1);border:0.5px solid rgba(217,107,90,0.35);border-radius:16px;font-size:14px;color:#f0ede8;line-height:1.6;text-align:center;">
+      <div style="font-size:22px;margin-bottom:8px;">🧭</div>
+      <strong style="display:block;margin-bottom:6px;color:#c8a96e;">Abra no Safari</strong>
+      Para usar AR no iPhone/iPad, copie o link e abra no <strong>Safari</strong>.<br>O Chrome no iOS não suporta Realidade Aumentada.
     </div>`;
 } else {
   // Android / outros: WebXR
