@@ -252,15 +252,14 @@
 const MODEL_URL = 'https://tapete-ar-viewer.vercel.app/Vase_Large(1).glb';
 const cta = document.getElementById('cta-area');
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isIOSSafari = isIOS && /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(navigator.userAgent);
 
-if (isIOSSafari) {
+if (isIOS) {
   // iOS: AR Quick Look — link nativo com rel="ar"
-  // AR Quick Look: <a rel="ar"> só pode ter <img> como filho
+  // <img> deve ser filho único de <a rel="ar">; opacity:0 em vez de display:none para compatibilidade com Chrome iOS
   cta.innerHTML = `
     <div style="position:relative;width:100%;">
       <a href="${MODEL_URL}" rel="ar" style="position:absolute;inset:0;z-index:2;">
-        <img src="" style="display:none;width:0;height:0" alt="">
+        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" alt="">
       </a>
       <div class="btn-ar-ios" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -269,14 +268,6 @@ if (isIOSSafari) {
         </svg>
         Abrir AR
       </div>
-    </div>`;
-} else if (isIOS) {
-  // iOS mas não Safari (Chrome, Firefox, etc.) — AR Quick Look não funciona
-  cta.innerHTML = `
-    <div style="padding:16px;background:rgba(217,107,90,0.1);border:0.5px solid rgba(217,107,90,0.35);border-radius:16px;font-size:14px;color:#f0ede8;line-height:1.6;text-align:center;">
-      <div style="font-size:22px;margin-bottom:8px;">🧭</div>
-      <strong style="display:block;margin-bottom:6px;color:#c8a96e;">Abra no Safari</strong>
-      Para usar AR no iPhone/iPad, copie o link e abra no <strong>Safari</strong>.<br>O Chrome no iOS não suporta Realidade Aumentada.
     </div>`;
 } else {
   // Android / outros: WebXR
