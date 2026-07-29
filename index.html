@@ -261,7 +261,7 @@
 <script>
 // Android/WebXR usa GLB; iOS AR Quick Look exige USDZ (não aceita GLB).
 const MODEL_URL = 'https://tapete-ar-viewer.vercel.app/Vase_Large(1).glb';
-const MODEL_URL_IOS = 'https://tapete-ar-viewer.vercel.app/Vase_Large.usdz';
+const MODEL_URL_IOS = 'https://tapete-ar-viewer.vercel.app/Vase_Large(1).usdz';
 const cta = document.getElementById('cta-area');
 const ua = navigator.userAgent;
 const isIOS = (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
@@ -304,107 +304,196 @@ if (isIOS && !isSafariIOS) {
     </button>`;
 }
 
-async function launchWebXR() {
-  if (!navigator.xr) { showNoAR(); return; }
-  const ok = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
-  if (!ok) { showNoAR(); return; }
-  openARSession();
-}
+// ---- WebXR (Android) — roda na MESMA página para preservar a ativação do usuário ----
+let renderer, scene, camera, model, reticle;
+let placed = false, currentScale = 1, baseScale = 1;
+let lastPinchDist = null, lastPinchAngle = null, dragStartX = null, startRotY = null;
+let xrSession = null, hitTestSource = null;
+let overlayEl = null, arCanvas = null, hintEl = null, scaleEl = null, resetEl = null;
 
 function showNoAR() {
   document.getElementById('no-ar-box').classList.add('visible');
 }
 
-function openARSession() {
-  const html = buildARPage(MODEL_URL);
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+async function launchWebXR() {
+  if (!navigator.xr) { showNoAR(); return; }
+  // requestSession EXIGE a ativação do usuário (o toque). Tem que ser chamado direto no
+  // handler do clique, na mesma página. Abrir uma nova janela e iniciar no load dela
+  // quebra a ativação e causa "requires user activation".
+  buildAROverlay();
+  let session;
+  try {
+    session = await navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['hit-test'],
+      optionalFeatures: ['dom-overlay'],
+      domOverlay: { root: overlayEl }
+    });
+  } catch (err) {
+    destroyAROverlay();
+    showNoAR();
+    return;
+  }
+  startAR(session);
 }
 
-function buildARPage(glbUrl) {
-  return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>AR — Tapete</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;overflow:hidden;font-family:system-ui,sans-serif;touch-action:none}
-canvas{display:block;width:100vw;height:100vh}
-#overlay{position:fixed;inset:0;pointer-events:none}
-#hint{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;text-align:center;white-space:nowrap;transition:opacity .4s;}
-#scale-badge{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:rgba(200,169,110,0.9);color:#0f0f0f;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;display:none;}
-#exit{position:fixed;top:env(safe-area-inset-top,20px);right:16px;background:rgba(0,0,0,0.55);color:#fff;border:none;border-radius:50px;padding:9px 18px;font-size:13px;cursor:pointer;pointer-events:all;}
-#reset{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.12);color:#fff;border:none;border-radius:50px;padding:9px 22px;font-size:13px;cursor:pointer;pointer-events:all;display:none;}
-</style>
-</head>
-<body>
-<canvas id="c"></canvas>
-<div id="overlay">
-  <div id="hint">Aponte para o chão e toque para posicionar</div>
-  <div id="scale-badge">100%</div>
-  <button id="exit" onclick="endSession()">✕ Sair</button>
-  <button id="reset" onclick="resetPlacement()">↺ Reposicionar</button>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
-<script>
-const canvas=document.getElementById('c');
-const hint=document.getElementById('hint');
-const scaleBadge=document.getElementById('scale-badge');
-const resetBtn=document.getElementById('reset');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.xr.enabled=true;
-const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.01,20);
-scene.add(new THREE.AmbientLight(0xffffff,1.0));
-const sun=new THREE.DirectionalLight(0xffffff,0.8);
-sun.position.set(1,3,2);scene.add(sun);
-let reticle,model,placed=false,currentScale=1,baseScale=1;
-let lastPinchDist=null,lastPinchAngle=null,dragStartX=null,startRotY=null;
-let xrSession=null,hitTestSource=null;
-reticle=new THREE.Mesh(
-  new THREE.RingGeometry(0.1,0.13,32).rotateX(-Math.PI/2),
-  new THREE.MeshBasicMaterial({color:0xc8a96e,side:THREE.DoubleSide})
-);
-reticle.matrixAutoUpdate=false;reticle.visible=false;scene.add(reticle);
-function loadGLTFScript(){return new Promise(res=>{if(window.THREE&&THREE.GLTFLoader){res();return;}const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';s.onload=res;document.head.appendChild(s);});}
-async function loadModel(url){await loadGLTFScript();return new Promise((resolve,reject)=>{const loader=new THREE.GLTFLoader();loader.load(url,gltf=>resolve(gltf.scene),null,reject);});}
-loadModel('${glbUrl}').then(obj=>{
-  model=obj;
-  const box=new THREE.Box3().setFromObject(model);
-  const size=box.getSize(new THREE.Vector3());
-  const maxDim=Math.max(size.x,size.z,0.01);
-  baseScale=1.2/maxDim;currentScale=1;
-  model.scale.setScalar(baseScale);model.visible=false;scene.add(model);
-}).catch(()=>{
-  const geo=new THREE.BoxGeometry(1.0,0.02,1.5);
-  const mat=new THREE.MeshLambertMaterial({color:0x8B6914});
-  model=new THREE.Mesh(geo,mat);baseScale=1;model.visible=false;scene.add(model);
-});
-navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['dom-overlay'],domOverlay:{root:document.getElementById('overlay')}}).then(session=>{
-  xrSession=session;renderer.xr.setSession(session);
-  session.requestReferenceSpace('viewer').then(rs=>{session.requestHitTestSource({space:rs}).then(src=>hitTestSource=src);});
-  session.addEventListener('select',onSelect);renderer.setAnimationLoop(onFrame);
-}).catch(err=>{hint.textContent='Erro: '+err.message;});
-function onSelect(){if(!reticle.visible||!model)return;model.position.setFromMatrixPosition(reticle.matrix);model.visible=true;placed=true;reticle.visible=false;hint.textContent='1 dedo: rotacionar  ·  2 dedos: escalar';resetBtn.style.display='block';scaleBadge.style.display='block';setTimeout(()=>{hint.style.opacity='0';},3500);}
-function onFrame(time,frame){if(!frame)return;renderer.render(scene,camera);if(!placed&&hitTestSource){const results=frame.getHitTestResults(hitTestSource);const rs=renderer.xr.getReferenceSpace();if(results.length>0){const pose=results[0].getPose(rs);reticle.visible=true;reticle.matrix.fromArray(pose.transform.matrix);}else{reticle.visible=false;}}}
-canvas.addEventListener('touchstart',e=>{if(!placed||!model)return;if(e.touches.length===2){lastPinchDist=pinchDist(e.touches);lastPinchAngle=pinchAngle(e.touches);}else if(e.touches.length===1){dragStartX=e.touches[0].clientX;startRotY=model.rotation.y;}},{passive:true});
-canvas.addEventListener('touchmove',e=>{if(!placed||!model)return;e.preventDefault();if(e.touches.length===2){const d=pinchDist(e.touches);const a=pinchAngle(e.touches);if(lastPinchDist){currentScale=Math.max(0.15,Math.min(6,currentScale*(d/lastPinchDist)));model.scale.setScalar(baseScale*currentScale);scaleBadge.textContent=Math.round(currentScale*100)+'%';}if(lastPinchAngle!==null){model.rotation.y+=a-lastPinchAngle;}lastPinchDist=d;lastPinchAngle=a;}else if(e.touches.length===1&&dragStartX!==null){const dx=e.touches[0].clientX-dragStartX;model.rotation.y=startRotY+dx*0.008;}},{passive:false});
-canvas.addEventListener('touchend',e=>{if(e.touches.length<2){lastPinchDist=null;lastPinchAngle=null;}if(e.touches.length<1){dragStartX=null;}},{passive:true});
-function pinchDist(t){const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;return Math.sqrt(dx*dx+dy*dy);}
-function pinchAngle(t){return Math.atan2(t[1].clientY-t[0].clientY,t[1].clientX-t[0].clientX);}
-function resetPlacement(){placed=false;if(model)model.visible=false;reticle.visible=false;hint.textContent='Aponte para o chão e toque para posicionar';hint.style.opacity='1';resetBtn.style.display='none';scaleBadge.style.display='none';}
-function endSession(){if(xrSession)xrSession.end();window.close();}
-window.addEventListener('resize',()=>{renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();});
-<\/script>
-</body>
-</html>`;
+function buildAROverlay() {
+  arCanvas = document.createElement('canvas');
+  arCanvas.id = 'ar-canvas';
+  document.body.appendChild(arCanvas);
+
+  overlayEl = document.createElement('div');
+  overlayEl.id = 'ar-overlay';
+  overlayEl.innerHTML = `
+    <div id="ar-hint">Aponte para o chão e toque para posicionar</div>
+    <div id="ar-scale">100%</div>
+    <button id="ar-exit" type="button">✕ Sair</button>
+    <button id="ar-reset" type="button">↺ Reposicionar</button>`;
+  document.body.appendChild(overlayEl);
+
+  hintEl = overlayEl.querySelector('#ar-hint');
+  scaleEl = overlayEl.querySelector('#ar-scale');
+  resetEl = overlayEl.querySelector('#ar-reset');
+  overlayEl.querySelector('#ar-exit').addEventListener('click', endSession);
+  resetEl.addEventListener('click', resetPlacement);
 }
+
+function destroyAROverlay() {
+  if (arCanvas) { arCanvas.remove(); arCanvas = null; }
+  if (overlayEl) { overlayEl.remove(); overlayEl = null; }
+}
+
+function startAR(session) {
+  xrSession = session;
+  renderer = new THREE.WebGLRenderer({ canvas: arCanvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.xr.enabled = true;
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+  scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+  sun.position.set(1, 3, 2); scene.add(sun);
+
+  reticle = new THREE.Mesh(
+    new THREE.RingGeometry(0.1, 0.13, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: 0xc8a96e, side: THREE.DoubleSide })
+  );
+  reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
+
+  placed = false; currentScale = 1;
+
+  loadModel(MODEL_URL).then(obj => {
+    model = obj;
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.z, 0.01);
+    baseScale = 1.2 / maxDim;
+    model.scale.setScalar(baseScale); model.visible = false; scene.add(model);
+  }).catch(() => {
+    const geo = new THREE.BoxGeometry(1.0, 0.02, 1.5);
+    const mat = new THREE.MeshLambertMaterial({ color: 0x8B6914 });
+    model = new THREE.Mesh(geo, mat); baseScale = 1; model.visible = false; scene.add(model);
+  });
+
+  renderer.xr.setSession(session);
+  session.requestReferenceSpace('viewer').then(rs => {
+    session.requestHitTestSource({ space: rs }).then(src => hitTestSource = src);
+  });
+  session.addEventListener('select', onSelect);
+  session.addEventListener('end', onSessionEnd);
+  renderer.setAnimationLoop(onFrame);
+
+  document.addEventListener('touchstart', onTouchStart, { passive: true });
+  document.addEventListener('touchmove', onTouchMove, { passive: false });
+  document.addEventListener('touchend', onTouchEnd, { passive: true });
+}
+
+function onSelect() {
+  if (!reticle.visible || !model) return;
+  model.position.setFromMatrixPosition(reticle.matrix);
+  model.visible = true; placed = true; reticle.visible = false;
+  hintEl.textContent = '1 dedo: rotacionar  ·  2 dedos: escalar';
+  resetEl.style.display = 'block';
+  scaleEl.style.display = 'block';
+  setTimeout(() => { hintEl.style.opacity = '0'; }, 3500);
+}
+
+function onFrame(time, frame) {
+  if (!frame) return;
+  renderer.render(scene, camera);
+  if (!placed && hitTestSource) {
+    const results = frame.getHitTestResults(hitTestSource);
+    const rs = renderer.xr.getReferenceSpace();
+    if (results.length > 0) {
+      const pose = results[0].getPose(rs);
+      reticle.visible = true;
+      reticle.matrix.fromArray(pose.transform.matrix);
+    } else {
+      reticle.visible = false;
+    }
+  }
+}
+
+function onTouchStart(e) {
+  if (!placed || !model) return;
+  if (e.touches.length === 2) { lastPinchDist = pinchDist(e.touches); lastPinchAngle = pinchAngle(e.touches); }
+  else if (e.touches.length === 1) { dragStartX = e.touches[0].clientX; startRotY = model.rotation.y; }
+}
+function onTouchMove(e) {
+  if (!placed || !model) return;
+  e.preventDefault();
+  if (e.touches.length === 2) {
+    const d = pinchDist(e.touches); const a = pinchAngle(e.touches);
+    if (lastPinchDist) { currentScale = Math.max(0.15, Math.min(6, currentScale * (d / lastPinchDist))); model.scale.setScalar(baseScale * currentScale); scaleEl.textContent = Math.round(currentScale * 100) + '%'; }
+    if (lastPinchAngle !== null) { model.rotation.y += a - lastPinchAngle; }
+    lastPinchDist = d; lastPinchAngle = a;
+  } else if (e.touches.length === 1 && dragStartX !== null) {
+    const dx = e.touches[0].clientX - dragStartX; model.rotation.y = startRotY + dx * 0.008;
+  }
+}
+function onTouchEnd(e) {
+  if (e.touches.length < 2) { lastPinchDist = null; lastPinchAngle = null; }
+  if (e.touches.length < 1) { dragStartX = null; }
+}
+function pinchDist(t) { const dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.sqrt(dx * dx + dy * dy); }
+function pinchAngle(t) { return Math.atan2(t[1].clientY - t[0].clientY, t[1].clientX - t[0].clientX); }
+
+function loadModel(url) {
+  return new Promise((resolve, reject) => {
+    new THREE.GLTFLoader().load(url, g => resolve(g.scene), null, reject);
+  });
+}
+
+function resetPlacement() {
+  placed = false;
+  if (model) model.visible = false;
+  reticle.visible = false;
+  hintEl.textContent = 'Aponte para o chão e toque para posicionar';
+  hintEl.style.opacity = '1';
+  resetEl.style.display = 'none';
+  scaleEl.style.display = 'none';
+}
+
+function endSession() {
+  if (xrSession) xrSession.end();
+}
+
+function onSessionEnd() {
+  document.removeEventListener('touchstart', onTouchStart);
+  document.removeEventListener('touchmove', onTouchMove);
+  document.removeEventListener('touchend', onTouchEnd);
+  if (renderer) { renderer.setAnimationLoop(null); if (renderer.dispose) renderer.dispose(); }
+  destroyAROverlay();
+  xrSession = null; hitTestSource = null; model = null; reticle = null; placed = false; renderer = null;
+}
+
+window.addEventListener('resize', () => {
+  if (!renderer) return;
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+});
 </script>
 </body>
 </html>
